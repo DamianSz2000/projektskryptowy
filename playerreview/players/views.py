@@ -1,33 +1,34 @@
 from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import redirect, render
 from django.template import loader, RequestContext
 from django.urls import reverse
 from .models import Players
 from .models import Reviews
-
+from .forms import NickNameForm
 def index(request):
-  template = loader.get_template('index.html')
-  return HttpResponse(template.render())
+  return render(request, 'index.html')
 def player_profile(request):
-    x = request.GET['nickname']
-    if(Players.objects.filter(nickname=x).exists()):
-        player = Players.objects.get(nickname=x)
-        player_id_1 = player.id
-        reviews = Reviews.objects.filter(player_id=player_id_1)
-        template = loader.get_template('player_profile.html')
-        context = {
-            'player': player,
-            'reviews': reviews,
-        }
-        return HttpResponse(template.render(context, request))
+    if request.POST:
+        x = request.POST['nickname'] #x is the nickname
+        if(Players.objects.filter(nickname=x).exists()):
+            player = Players.objects.get(nickname=x)
+            player_id_1 = player.id
+            reviews = Reviews.objects.filter(player_id=player_id_1)
+            context = {
+                'player': player,
+                'reviews': reviews,
+            }
+            return render(request, 'player_profile.html', context)
+        else:
+            player = Players(nickname=x)
+            player.save()
+            context = {
+                'player': player,
+                'reviews': [],
+            }
+            return render(request, 'player_profile.html', context)
     else:
-        player = Players(nickname=x)
-        player.save()
-        template = loader.get_template('viewplayer.html')
-        context = {
-            'player': player,
-            'reviews': [],
-        }
-        return HttpResponse(template.render(context, request))
+        return render(reverse('index'))
 # def addreview(request):
 #     x = request.GET['nickname']
 #     player = Players.objects.get(nickname=x)
