@@ -4,31 +4,52 @@ from django.template import loader, RequestContext
 from django.urls import reverse
 from .models import Players
 from .models import Reviews
-from .forms import NickNameForm
 def index(request):
   return render(request, 'index.html')
-def player_profile(request):
+def player_profile(request, nickname=None):
     if request.POST:
-        x = request.POST['nickname'] #x is the nickname
+        x = request.POST['nickname']
         if(Players.objects.filter(nickname=x).exists()):
             player = Players.objects.get(nickname=x)
-            player_id_1 = player.id
-            reviews = Reviews.objects.filter(player_id=player_id_1)
+            reviews = Reviews.objects.filter(player=player)
             context = {
                 'player': player,
                 'reviews': reviews,
+                'nickname': player.nickname
             }
-            return render(request, 'player_profile.html', context)
+            return redirect(reverse('player_profile', kwargs={'nickname': player.nickname}))
         else:
-            player = Players(nickname=x)
+            player = Players(nickname=x, number_of_reviews=0)
             player.save()
             context = {
                 'player': player,
-                'reviews': [],
+                'nickname': player.nickname,
+                'reviews': []
+            }
+            return redirect(reverse('player_profile', kwargs={'nickname': player.nickname}))
+
+    else:
+        x = nickname
+        if(Players.objects.filter(nickname=x).exists()):
+            player = Players.objects.get(nickname=x)
+            reviews = Reviews.objects.filter(player=player)
+            context = {
+                'player': player,
+                'reviews': reviews,
+                'nickname': player.nickname
             }
             return render(request, 'player_profile.html', context)
-    else:
-        return render(reverse('index'))
+        else:
+            player = Players(nickname=x, number_of_reviews=0)
+            player.save()
+            context = {
+                'player': player,
+                'nickname': player.nickname,
+                'reviews': []
+            }
+            return render(request, 'player_profile.html', context)
+def login_form(request):
+    return render(request, 'login_form.html')
 # def addreview(request):
 #     x = request.GET['nickname']
 #     player = Players.objects.get(nickname=x)
