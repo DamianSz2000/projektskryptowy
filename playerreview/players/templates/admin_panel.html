@@ -26,14 +26,12 @@
     <div class="container py-4 py-xl-5">
         <div class="row mb-5">
             <div class="col-md-8 col-xl-6 text-center mx-auto">
-                <h2 style="color: rgb(255,255,255);">{{ player.nickname }}</h2>
-                <a class="btn btn-primary ms-auto" role="button" href="/add_review/{{ player.nickname }}" style="background: var(--bs-body-color);border: 2px solid var(--bs-yellow);font-family: Alata, sans-serif;">Add review</a>
                 <p class="w-lg-50" style="color: rgb(255,255,255);"></p>
             </div>
         </div>
         <div class="row gy-4 row-cols-1 row-cols-md-2 row-cols-xl-3">
             {% for x in reviews %}
-                {% if x.accepted == 1 %}
+            {% if x.accepted == 0 %}
             <div class="col" style="border: 1px none var(--bs-yellow) ;">
                 <div class="card" style="border: 1px solid var(--bs-yellow) ;"><img class="card-img-top w-100 d-block fit-cover" style="height: 200px;" src="{{ x.image_link }}">
                     <div class="card-body p-4" style="background: var(--bs-body-color);border: 1px solid var(--bs-yellow) ;">
@@ -42,13 +40,15 @@
                         <div class="d-flex"><img class="rounded-circle flex-shrink-0 me-3 fit-cover" width="50" height="50" src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png">
                             <div>
                                 <p class="fw-bold mb-0" style="color: rgb(255,255,255);">{{ x.author }}</p>
+                                <a class="btn btn-primary ms-auto" role="button" href="/accept_review/{{x.id}}" style="background: var(--bs-body-color);border: 2px solid var(--bs-green);font-family: Alata, sans-serif;">Accept review</a>
+                                <a class="btn btn-primary ms-auto" role="button" href="/reject_review/{{x.id}}" style="background: var(--bs-body-color);border: 2px solid var(--bs-red);font-family: Alata, sans-serif;">Reject review</a>
                                 <p class="text-muted mb-0">Data</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-                {% endif %}
+            {% endif %}
             {% endfor %}
         </div>
     </div>

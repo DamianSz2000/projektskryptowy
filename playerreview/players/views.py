@@ -4,8 +4,15 @@ from django.template import loader, RequestContext
 from django.urls import reverse
 from .models import Players
 from .models import Reviews
+import datetime
 def index(request):
-  return render(request, 'index.html')
+    players = Players.objects.all()
+    #sort players by amount of reviews
+    players = sorted(players, key=lambda x: x.number_of_reviews, reverse=True)
+    context = {
+        'players': players
+    }
+    return render(request, 'index.html', context)
 def player_profile(request, nickname=None):
     if request.POST:
         x = request.POST['nickname']
@@ -50,14 +57,38 @@ def player_profile(request, nickname=None):
             return render(request, 'player_profile.html', context)
 def login_form(request):
     return render(request, 'login_form.html')
-# def addreview(request):
-#     x = request.GET['nickname']
-#     player = Players.objects.get(nickname=x)
-#     player.number_of_reviews += 1
-#     player.save()
-#     player_id_1 = player.id
-#     review = request.GET['review']
-#     author = request.GET['author']
-#     new_review = Reviews(player_id=player_id_1, review=review, author=author, accepted=False)
-#     new_review.save()
-#     return HttpResponseRedirect(reverse('index'))
+def add_review(request, nickname=None):
+    player = Players.objects.get(nickname=nickname)
+    context = {
+        'player': player,
+        'nickname': player.nickname
+    }
+    return render(request, 'add_review.html', context)
+def submit_review(request, nickname=None):
+    player = Players.objects.get(nickname=nickname)
+    if request.POST:
+        x = request.POST['review']
+        y = request.POST['screenshot']
+        z = request.POST['author']
+        review = Reviews(player=player, review=x, image_link=y, author = z, accepted = 0, date_of_submit = datetime.datetime.now())
+        review.save()
+        player.number_of_reviews += 1
+        player.save()
+    return redirect(reverse('player_profile', kwargs={'nickname': player.nickname}))
+def admin_panel(request):
+    players = Players.objects.all()
+    reviews = Reviews.objects.all()
+    context = {
+        'players': players,
+        'reviews': reviews
+    }
+    return render(request, 'admin_panel.html', context)
+def accept_review(request, id):
+    review = Reviews.objects.get(id=id)
+    review.accepted = 1
+    review.save()
+    return redirect(reverse('admin_panel'))
+def reject_review(request, id):
+    review = Reviews.objects.get(id=id)
+    review.delete()
+    return redirect(reverse('admin_panel'))
